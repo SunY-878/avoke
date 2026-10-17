@@ -1,4 +1,5 @@
 import AppKit
+import Carbon
 import SwiftUI
 import IslandCore
 
@@ -23,6 +24,7 @@ import IslandCore
     private var island: IslandWindowController?
     private var statusItem: NSStatusItem?
     private var shortcut: GlobalShortcut?
+    private var awakeShortcut: GlobalShortcut?
     private var terminationSignal: DispatchSourceSignal?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -93,10 +95,22 @@ import IslandCore
             }
         }
         if shortcut?.isRegistered != true { model.settingsMessage = "⌥ Space 已被其他应用占用，仍可从菜单栏呼出。" }
+        awakeShortcut = GlobalShortcut(keyCode: UInt32(kVK_F13), modifiers: 0, id: 2) { [weak self] in
+            DispatchQueue.main.async {
+                guard let awake = self?.awake else { return }
+                if awake.isActive { awake.stop() }
+                else { awake.start() }
+            }
+        }
+        if awakeShortcut?.isRegistered != true {
+            model.settingsMessage = [model.settingsMessage, "F13 已被其他应用占用，请从唤醒页面控制防休眠。"]
+                .compactMap { $0 }.joined(separator: "\n")
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
-        island?.stop(); media?.stop(); clipboard?.stop(); system?.stop(); awake?.stop(); shortcut = nil
+        island?.stop(); media?.stop(); clipboard?.stop(); system?.stop(); awake?.stop()
+        shortcut = nil; awakeShortcut = nil
     }
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         model?.open(); model?.pinned = true; return false

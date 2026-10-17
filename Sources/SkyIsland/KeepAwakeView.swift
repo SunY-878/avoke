@@ -35,6 +35,7 @@ struct KeepAwakeView: View {
                     }.font(.system(size: 11, weight: .medium)).foregroundStyle(.black)
                         .frame(maxWidth: .infinity).frame(height: 35).background(accent, in: RoundedRectangle(cornerRadius: 10))
                 }.buttonStyle(IslandPressStyle()).disabled(service.isPreview)
+                    .help("按 F13 可直接开启或结束防休眠，无需展开界面。")
                 if service.isActive {
                     Button { service.stop() } label: {
                         Text("结束").font(.system(size: 11, weight: .medium)).foregroundStyle(.white.opacity(0.8))
